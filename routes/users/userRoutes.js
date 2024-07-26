@@ -50,24 +50,24 @@ userRouter.get("/profile/:id", async (req, res) => {
   }
 });
 
-// delete user
-userRouter.delete("/:id", async (req, res) => {
-  try {
-    res.json({
-      status: "Success",
-      data: "user deleted",
-    });
-  } catch (error) {
-    res.json(error.message);
-  }
-});
-
 // update user
 userRouter.put("/:id", async (req, res) => {
   try {
     res.json({
       status: "Success",
       data: "user updated",
+    });
+  } catch (error) {
+    res.json(error.message);
+  }
+});
+
+// delete user
+userRouter.delete("/:id", async (req, res) => {
+  try {
+    res.json({
+      status: "Success",
+      data: "user deleted",
     });
   } catch (error) {
     res.json(error.message);
