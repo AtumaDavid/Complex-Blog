@@ -3,15 +3,16 @@ const getTokenFromHeader = (req) => {
   const headerObject = req.headers;
 
   const token = headerObject["authorization"];
+  if (token && token.startsWith("Bearer ")) {
+    return token.slice(7); // Remove "Bearer " from the start
+  }
+  // return null;
   // console.log(token);
 
   if (token !== undefined) {
     return token;
   } else {
-    return {
-      status: "failed",
-      message: "There is no token attached to the header",
-    };
+    return false;
   }
 };
 

@@ -91,7 +91,7 @@ module.exports.getUserController = async (req, res) => {
   const { id } = req.params;
   try {
     const token = getTokenFromHeader(req);
-    console.log(token);
+    // console.log(token);
 
     const user = await User.findById(id);
     res.json({

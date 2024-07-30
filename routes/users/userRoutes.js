@@ -7,6 +7,7 @@ const {
   updateUserController,
   deleteUserController,
 } = require("../../controllers/users/userController");
+const isLoginMiddleware = require("../../middleware/isLogin");
 
 const userRouter = express.Router();
 
@@ -20,7 +21,7 @@ userRouter.post("/login", userLoginController);
 userRouter.get("/", getAllUserController);
 
 // get a particular user profile
-userRouter.get("/profile/:id", getUserController);
+userRouter.get("/profile/:id", isLoginMiddleware, getUserController);
 
 // update user
 userRouter.put("/:id", updateUserController);
