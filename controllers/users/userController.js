@@ -1,5 +1,6 @@
 const User = require("../../model/User/User");
 const bcrypt = require("bcryptjs");
+const generateToken = require("../../utils/generateToken");
 
 // register
 module.exports.userRegisterController = async (req, res) => {
@@ -58,7 +59,14 @@ module.exports.userLoginController = async (req, res) => {
 
     res.json({
       status: "Success",
-      data: userFound,
+      //   data: userFound,
+      data: {
+        firstname: userFound.firstname,
+        lastname: userFound.lastname,
+        email: userFound.email,
+        isAdmin: userFound.isAdmin,
+        token: generateToken(userFound._id),
+      },
     });
   } catch (error) {
     res.json(error.message);
@@ -77,12 +85,14 @@ module.exports.getAllUserController = async (req, res) => {
   }
 };
 
-// get a user controller
+// get a user controller --profile
 module.exports.getUserController = async (req, res) => {
+  const { id } = req.params;
   try {
+    const user = await User.findById(id);
     res.json({
       status: "Success",
-      data: "gotten users",
+      data: user,
     });
   } catch (error) {
     res.json(error.message);

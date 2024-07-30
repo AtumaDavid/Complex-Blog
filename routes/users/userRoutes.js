@@ -19,7 +19,7 @@ userRouter.post("/login", userLoginController);
 // get users
 userRouter.get("/", getAllUserController);
 
-// get a particular user
+// get a particular user profile
 userRouter.get("/profile/:id", getUserController);
 
 // update user
