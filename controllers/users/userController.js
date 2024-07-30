@@ -1,6 +1,7 @@
 const User = require("../../model/User/User");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
+const getTokenFromHeader = require("../../utils/getTokenFromHeader");
 
 // register
 module.exports.userRegisterController = async (req, res) => {
@@ -89,6 +90,9 @@ module.exports.getAllUserController = async (req, res) => {
 module.exports.getUserController = async (req, res) => {
   const { id } = req.params;
   try {
+    const token = getTokenFromHeader(req);
+    console.log(token);
+
     const user = await User.findById(id);
     res.json({
       status: "Success",
