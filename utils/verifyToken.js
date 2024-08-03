@@ -11,3 +11,6 @@ const verifyToken = (token) => {
 };
 
 module.exports = verifyToken;
+
+// This function is also used in the authentication middleware.
+// It takes the token extracted by getTokenFromHeader and verifies its authenticity and expiration.

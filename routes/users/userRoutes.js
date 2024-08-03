@@ -21,7 +21,8 @@ userRouter.post("/login", userLoginController);
 userRouter.get("/", getAllUserController);
 
 // get a particular user profile
-userRouter.get("/profile/:id", isLoginMiddleware, getUserController);
+// userRouter.get("/profile/:id", isLoginMiddleware, getUserController);
+userRouter.get("/profile/", isLoginMiddleware, getUserController);
 
 // update user
 userRouter.put("/:id", updateUserController);

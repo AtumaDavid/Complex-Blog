@@ -2,17 +2,19 @@ const User = require("../../model/User/User");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
 const getTokenFromHeader = require("../../utils/getTokenFromHeader");
+const appErr = require("../../utils/appErr");
 
 // register
-module.exports.userRegisterController = async (req, res) => {
+module.exports.userRegisterController = async (req, res, next) => {
   const { firstname, lastname, profilePhoto, email, password } = req.body; //from user model
   try {
     //check if email exists
     const userFound = await User.findOne({ email });
     if (userFound) {
-      return res.json({
-        msg: "User already exists",
-      });
+      // return res.json({
+      //   msg: "User already exists",
+      // });
+      return next(appErr("User Already Exists", 500));
     }
 
     // hassh password
@@ -33,7 +35,8 @@ module.exports.userRegisterController = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.json(error.message);
+    // res.json(error.message);
+    next(new Error(error.message));
   }
 };
 
@@ -88,12 +91,15 @@ module.exports.getAllUserController = async (req, res) => {
 
 // get a user controller --profile
 module.exports.getUserController = async (req, res) => {
-  const { id } = req.params;
+  //   const { id } = req.params;
   try {
     const token = getTokenFromHeader(req);
     // console.log(token);
+    // console.log(req.user);
 
-    const user = await User.findById(id);
+    // const user = await User.findById(id);
+    // req.user from "req.user = decodedUser.id" in isLogin middleware
+    const user = await User.findById(req.user);
     res.json({
       status: "Success",
       data: user,
