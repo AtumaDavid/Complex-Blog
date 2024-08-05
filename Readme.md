@@ -4,6 +4,9 @@
 ## Technology
 
 - npm i jsonwebtoken (jwt.io)
+- npm i multer@1.4.5-lts.1
+- npm i cloudinary
+- npm i multer-storage-cloudinary@4.0.0
 
 ## Authentication Flow
 
