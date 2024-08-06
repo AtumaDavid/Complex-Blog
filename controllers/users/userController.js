@@ -133,6 +133,108 @@ module.exports.deleteUserController = async (req, res) => {
   }
 };
 
+// profile photo upload
+module.exports.profilePhotoUploadController = async (req, res, next) => {
+  try {
+    // Find the user to be updated
+    const userToUpdate = await User.findById(req.user);
+
+    // Check if user is found
+    if (!userToUpdate) {
+      return next(appErr("User not found", 404)); // Use 404 for not found
+    }
+
+    // Check if user is blocked (by admin)
+    if (userToUpdate.isBlocked) {
+      return next(appErr("Action not allowed, your account is blocked", 403));
+    }
+
+    // Check if a file is uploaded
+    if (req.file) {
+      // Update profile photo
+      await User.findByIdAndUpdate(
+        req.userAuth,
+        {
+          $set: {
+            profilePhoto: req.file.path,
+          },
+        },
+        {
+          new: true,
+        }
+      );
+
+      return res.json({
+        status: "Success",
+        data: "Profile photo updated",
+      });
+    } else {
+      // Handle case where no file is uploaded
+      return next(appErr("No file uploaded", 400));
+    }
+  } catch (error) {
+    // Pass error to the global error handler
+    // return next(appErr(error.message, 500));
+    res.json(error.message);
+  }
+};
+
+// module.exports.profilePhotoUploadController = async (req, res) => {
+//   try {
+//     // Find the user to be updated
+//     const userToUpdate = await User.findById(req.user);
+
+//     // Check if user is found
+//     if (!userToUpdate) {
+//       return res.status(404).json({
+//         status: "Error",
+//         message: "User not found",
+//       });
+//     }
+
+//     // Check if user is blocked (by admin)
+//     if (userToUpdate.isBlocked) {
+//       return res.status(403).json({
+//         status: "Error",
+//         message: "Action not allowed, your account is blocked",
+//       });
+//     }
+
+//     // Check if a file is uploaded
+//     if (req.file) {
+//       // Update profile photo
+//       await User.findByIdAndUpdate(
+//         req.userAuth,
+//         {
+//           $set: {
+//             profilePhoto: req.file.path,
+//           },
+//         },
+//         {
+//           new: true,
+//         }
+//       );
+
+//       return res.json({
+//         status: "Success",
+//         message: "Profile photo updated",
+//       });
+//     } else {
+//       // Handle case where no file is uploaded
+//       return res.status(400).json({
+//         status: "Error",
+//         message: "No file uploaded",
+//       });
+//     }
+//   } catch (error) {
+//     // Return a generic error message
+//     res.status(500).json({
+//       status: "Error",
+//       message: error.message || "Internal Server Error",
+//     });
+//   }
+// };
+
 // modoule.exports = {
 //     userRegistrController
 // }
