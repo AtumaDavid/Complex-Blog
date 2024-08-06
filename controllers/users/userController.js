@@ -89,6 +89,41 @@ module.exports.getAllUserController = async (req, res) => {
   }
 };
 
+// who viewed my profile
+module.exports.whoViewedMyProfileController = async (req, res, next) => {
+  try {
+    // Find the original user
+    const user = await User.findById(req.params.id);
+
+    // find the user who viewed the oroiginal user profile
+    const userWhoViewed = await User.findById(req.user);
+
+    // check if original user and who viewed are found
+    if (user && userWhoViewed) {
+      // check if userWhoViewed is already in the users viewers array
+      const isUserAlreadyViewed = user.viewedBy.find(
+        (viewer) => viewer.toString() === userWhoViewed._id.toJSON()
+      );
+      if (isUserAlreadyViewed) {
+        return next(appErr("you already vewed this profile"));
+      } else {
+        // push the userWhoViewed to thhe user's array
+        user.viewedBy.push(userWhoViewed._id);
+
+        // save the user
+        await user.save();
+
+        res.json({
+          status: "Success",
+          data: "you have viewed this profile",
+        });
+      }
+    }
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
 // get a user controller --profile
 module.exports.getUserController = async (req, res) => {
   //   const { id } = req.params;
