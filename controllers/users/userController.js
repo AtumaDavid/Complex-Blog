@@ -17,7 +17,7 @@ module.exports.userRegisterController = async (req, res, next) => {
       return next(appErr("User Already Exists", 500));
     }
 
-    // hassh password
+    // hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -84,6 +84,44 @@ module.exports.getAllUserController = async (req, res) => {
       status: "Success",
       data: "gotten all users",
     });
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// following
+module.exports.followingController = async (req, res) => {
+  try {
+    // find the user to follow
+    const userToFollow = await User.findById(req.params.id);
+
+    // find user who is following
+    const userWhoFollowed = await User.findById(req.user);
+
+    // check if user and userWhoFollowed are found
+    if (userToFollow && userWhoFollowed) {
+      // check if userWhofollowed is already in the user's followers array
+      const isUserAlreadyFollowed = userToFollow.following.find(
+        (follower) => follower.toString() === userWhoFollowed._id.toString
+      );
+      if (isUserAlreadyFollowed) {
+        return next(appErr("you already followed this user"));
+      } else {
+        // push userWhoFollowed to the user's followers array
+        userToFollow.followers.push(userWhoFollowed._id);
+
+        // push userToFollow to the userWhoFollowed"s following array
+        userWhoFollowed.following.push(userToFollow._id);
+
+        // save
+        await userWhoFollowed.save();
+        await userToFollow.save();
+        res.json({
+          status: "Success",
+          data: "you have successfully followed this user",
+        });
+      }
+    }
   } catch (error) {
     res.json(error.message);
   }
