@@ -89,41 +89,118 @@ module.exports.getAllUserController = async (req, res) => {
   }
 };
 
-// following
-module.exports.followingController = async (req, res) => {
+// following controller
+module.exports.followingController = async (req, res, next) => {
   try {
-    // find the user to follow
+    // Find the user to be followed by ID from the request parameters
     const userToFollow = await User.findById(req.params.id);
-
-    // find user who is following
+    // Find the current user (who is trying to follow) from the authenticated user's ID
     const userWhoFollowed = await User.findById(req.user);
 
-    // check if user and userWhoFollowed are found
-    if (userToFollow && userWhoFollowed) {
-      // check if userWhofollowed is already in the user's followers array
-      const isUserAlreadyFollowed = userToFollow.following.find(
-        (follower) => follower.toString() === userWhoFollowed._id.toString
-      );
-      if (isUserAlreadyFollowed) {
-        return next(appErr("you already followed this user"));
-      } else {
-        // push userWhoFollowed to the user's followers array
-        userToFollow.followers.push(userWhoFollowed._id);
-
-        // push userToFollow to the userWhoFollowed"s following array
-        userWhoFollowed.following.push(userToFollow._id);
-
-        // save
-        await userWhoFollowed.save();
-        await userToFollow.save();
-        res.json({
-          status: "Success",
-          data: "you have successfully followed this user",
-        });
-      }
+    // Check if both users exist in the database
+    if (!userToFollow || !userWhoFollowed) {
+      // If either user is not found, return a 404 error
+      return res
+        .status(404)
+        .json({ status: "Error", message: "User not found" });
     }
+
+    // Check if the user is trying to follow themselves
+    if (userToFollow._id.toString() === userWhoFollowed._id.toString()) {
+      // If so, return a 400 error
+      return res
+        .status(400)
+        .json({ status: "Error", message: "You cannot follow yourself" });
+    }
+
+    // Check if the current user is already following the target user
+    const isUserAlreadyFollowed = userToFollow.followers.includes(
+      userWhoFollowed._id
+    );
+    if (isUserAlreadyFollowed) {
+      // If already following, return a 400 error
+      return res
+        .status(400)
+        .json({ status: "Error", message: "You already followed this user" });
+    }
+
+    // Add the current user's ID to the followers array of the user to be followed
+    userToFollow.followers.push(userWhoFollowed._id);
+    // Add the target user's ID to the following array of the current user
+    userWhoFollowed.following.push(userToFollow._id);
+
+    // Save both user documents to the database concurrently
+    await Promise.all([userToFollow.save(), userWhoFollowed.save()]);
+
+    // Send a success response
+    res.json({
+      status: "Success",
+      message: "You have successfully followed this user",
+    });
   } catch (error) {
-    res.json(error.message);
+    // If any error occurs during the process, send a 500 error response
+    res.status(500).json({ status: "Error", message: error.message });
+  }
+};
+
+// unfollow controller
+module.exports.unfollowController = async (req, res, next) => {
+  try {
+    // Find the user to be unfollowed by ID from the request parameters
+    const userToBeUnfollowed = await User.findById(req.params.id);
+    // Find the current user (who is trying to unfollow) from the authenticated user's ID
+    const userWhoUnfollowed = await User.findById(req.user);
+
+    // Check if both users exist in the database
+    if (!userToBeUnfollowed || !userWhoUnfollowed) {
+      // If either user is not found, return a 404 error
+      return res
+        .status(404)
+        .json({ status: "Error", message: "User not found" });
+    }
+
+    // Check if the user is trying to unfollow themselves
+    if (
+      userToBeUnfollowed._id.toString() === userWhoUnfollowed._id.toString()
+    ) {
+      // If so, return a 400 error
+      return res
+        .status(400)
+        .json({ status: "Error", message: "You cannot unfollow yourself" });
+    }
+
+    // Check if the current user is actually following the target user
+    const isUserFollowed = userToBeUnfollowed.followers.includes(
+      userWhoUnfollowed._id
+    );
+    if (!isUserFollowed) {
+      // If not following, return a 400 error
+      return res
+        .status(400)
+        .json({ status: "Error", message: "You are not following this user" });
+    }
+
+    // Remove the current user's ID from the followers array of the user to be unfollowed
+    userToBeUnfollowed.followers = userToBeUnfollowed.followers.filter(
+      (follower) => follower.toString() !== userWhoUnfollowed._id.toString()
+    );
+
+    // Remove the target user's ID from the following array of the current user
+    userWhoUnfollowed.following = userWhoUnfollowed.following.filter(
+      (following) => following.toString() !== userToBeUnfollowed._id.toString()
+    );
+
+    // Save both user documents to the database concurrently
+    await Promise.all([userToBeUnfollowed.save(), userWhoUnfollowed.save()]);
+
+    // Send a success response
+    res.json({
+      status: "Success",
+      message: "You have successfully unfollowed the user",
+    });
+  } catch (error) {
+    // If any error occurs during the process, send a 500 error response
+    res.status(500).json({ status: "Error", message: error.message });
   }
 };
 
@@ -257,6 +334,27 @@ module.exports.profilePhotoUploadController = async (req, res, next) => {
   }
 };
 
-// modoule.exports = {
-//     userRegistrController
-// }
+// block user
+module.exports.blockUserController = async (req, res) => {
+  try {
+    // find the user to be blocked
+
+    res.json({
+      status: "Success",
+      data: "blocked",
+    });
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// module.exports.blockUserController = async (req, res) => {
+//   try {
+//     res.json({
+//       status: "Success",
+//       data: "blocked",
+//     });
+//   } catch (error) {
+//     res.json(error.message);
+//   }
+// };

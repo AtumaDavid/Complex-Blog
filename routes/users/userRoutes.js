@@ -9,6 +9,8 @@ const {
   profilePhotoUploadController,
   whoViewedMyProfileController,
   followingController,
+  unfollowController,
+  blockUserController,
 } = require("../../controllers/users/userController");
 const isLoginMiddleware = require("../../middleware/isLogin");
 const storage = require("../../config/cloudinary");
@@ -45,6 +47,12 @@ userRouter.put("/:id", updateUserController);
 
 //following
 userRouter.get("/following/:id", isLoginMiddleware, followingController);
+
+//unfollow
+userRouter.get("/unfollow/:id", isLoginMiddleware, unfollowController);
+
+//blocked
+userRouter.get("/blocked/:id", isLoginMiddleware, blockUserController);
 
 // user prpofile photo
 userRouter.post(
