@@ -1,9 +1,29 @@
+const Post = require("../../model/Post/Post");
+const User = require("../../model/User/User");
+
 // create post
 module.exports.createPostController = async (req, res) => {
+  const { title, description } = req.body;
   try {
+    // find the user
+    const author = await User.findById(req.user);
+
+    // create the post
+    const postCreated = await Post.create({
+      title,
+      description,
+      user: author._id,
+    });
+
+    // associate user to a post -push the post into the user post field
+    author.posts.push(postCreated._id);
+
+    // save
+    await author.save();
+
     res.json({
       status: "Success",
-      data: "post created",
+      data: postCreated,
     });
   } catch (error) {
     res.json(error.message);

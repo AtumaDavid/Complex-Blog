@@ -6,11 +6,12 @@ const {
   updatePostController,
   deletePostController,
 } = require("../../controllers/posts/postController");
+const isLoginMiddleware = require("../../middleware/isLogin");
 
 const postRouter = express.Router();
 
 // create post
-postRouter.post("/", createPostController);
+postRouter.post("/", isLoginMiddleware, createPostController);
 
 // get all posts
 postRouter.get("/", getAllPostsController);
