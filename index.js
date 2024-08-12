@@ -6,7 +6,7 @@ const commentsRouter = require("./routes/comments/commentsRoute");
 
 const dotenv = require("dotenv");
 const globalErrHandler = require("./middleware/globalErrorHandler");
-const isAdminMiddleware = require("./middleware/isAdmin");
+// const isAdminMiddleware = require("./middleware/isAdmin");
 
 dotenv.config();
 require("./config/dbConnect");
@@ -16,7 +16,7 @@ const app = express();
 // middleware
 app.use(express.json()); //pass incoming payload
 
-app.use(isAdminMiddleware);
+// app.use(isAdminMiddleware);
 
 // users
 app.use("/api/v1/users/", userRouter);

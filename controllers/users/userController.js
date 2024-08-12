@@ -80,9 +80,11 @@ module.exports.userLoginController = async (req, res) => {
 // get all users
 module.exports.getAllUserController = async (req, res) => {
   try {
+    const users = await User.find();
     res.json({
       status: "Success",
-      data: "gotten all users",
+      data: users,
+      // data: "all users",
     });
   } catch (error) {
     res.json(error.message);

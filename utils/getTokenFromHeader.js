@@ -3,6 +3,7 @@ const getTokenFromHeader = (req) => {
   const headerObject = req.headers;
 
   const token = headerObject["authorization"];
+
   if (token && token.startsWith("Bearer ")) {
     return token.slice(7); // Remove "Bearer " from the start
   }
