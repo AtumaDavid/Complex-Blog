@@ -11,10 +11,14 @@ const {
   followingController,
   unfollowController,
   blockUserController,
+  unBlockUserController,
+  adminBlockUserController,
+  adminUnblockUserController,
 } = require("../../controllers/users/userController");
 const isLoginMiddleware = require("../../middleware/isLogin");
 const storage = require("../../config/cloudinary");
 const multer = require("multer");
+const isAdminMiddleware = require("../../middleware/isAdmin");
 
 const userRouter = express.Router();
 
@@ -53,6 +57,25 @@ userRouter.get("/unfollow/:id", isLoginMiddleware, unfollowController);
 
 //blocked
 userRouter.get("/blocked/:id", isLoginMiddleware, blockUserController);
+
+// unblock user
+userRouter.get("/unblocked/:id", isLoginMiddleware, unBlockUserController);
+
+// admin-block user
+userRouter.put(
+  "/admin-block/:id",
+  isLoginMiddleware,
+  isAdminMiddleware,
+  adminBlockUserController
+);
+
+// admin-unblock user
+userRouter.put(
+  "/admin-unblock/:id",
+  isLoginMiddleware,
+  isAdminMiddleware,
+  adminUnblockUserController
+);
 
 // user prpofile photo
 userRouter.post(

@@ -335,13 +335,121 @@ module.exports.profilePhotoUploadController = async (req, res, next) => {
 };
 
 // block user
-module.exports.blockUserController = async (req, res) => {
+module.exports.blockUserController = async (req, res, next) => {
   try {
     // find the user to be blocked
+    const userToBeBlocked = await User.findById(req.params.id);
 
+    // find the user who is blocking
+    const userWhoBlocked = await User.findById(req.user);
+
+    // check if userToBeBlocked and userWhoBlocked are found
+    if (userToBeBlocked && userWhoBlocked) {
+      // check if userWhoBlocked is already in the user's blocked array
+      const isUserAlreadyBlocked = userWhoBlocked.blocked.find(
+        (blocked) => blocked.toString() === userToBeBlocked._id.toString()
+      );
+      if (isUserAlreadyBlocked) {
+        return next(appErr("you already blocked this user"));
+      }
+      // push userToBeBlocked to the userWhoBlocked's blocked array
+      userWhoBlocked.blocked.push(userToBeBlocked._id);
+      // save
+      await userWhoBlocked.save();
+      res.json({
+        status: "Success",
+        data: "you have successfully blocked this user",
+      });
+    }
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// unblock user
+module.exports.unBlockUserController = async (req, res, next) => {
+  try {
+    // find the user to be unblocked
+    const userToBeUnblocked = await User.findById(req.params.id);
+
+    // find the user who is unblocking
+    const userWhoUnblocked = await User.findById(req.user);
+
+    // check if userToBeUnblocked and userWhoUnblocked are found
+    if (userToBeUnblocked && userWhoUnblocked) {
+      // check if userWhoUnblocked is already in the user's blocked array
+      const isUserAlreadyBlocked = userWhoUnblocked.blocked.find(
+        (blocked) => blocked.toString() === userToBeUnblocked._id.toString()
+      );
+      if (!isUserAlreadyBlocked) {
+        return res
+          .status(400)
+          .json({ status: "Error", message: "You have not blocked this user" });
+      }
+      // remove the userToBeUnblocked from the main user
+      userWhoUnblocked.blocked = userWhoUnblocked.blocked.filter(
+        (blocked) => blocked.toString() !== userToBeUnblocked._id.toString()
+      );
+      // save
+      await userWhoUnblocked.save();
+      res.json({
+        status: "Success",
+        data: "you have successfully unblocked this user",
+      });
+    }
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// admin-block
+module.exports.adminBlockUserController = async (req, res, next) => {
+  try {
+    // find the user to be blocked by admin
+    const userToBeBlocked = await User.findById(req.params.id);
+
+    // check if user found
+    if (!userToBeBlocked) {
+      return res
+        .status(500)
+        .json({ status: "Error", message: "user not found" });
+    }
+
+    // change the isBlocked to true
+    userToBeBlocked.isBlocked = true;
+
+    // save
+    await userToBeBlocked.save();
     res.json({
       status: "Success",
-      data: "blocked",
+      data: "you have successfully blocked this user(admin)",
+    });
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// admin--unblock
+module.exports.adminUnblockUserController = async (req, res) => {
+  try {
+    // find the user to be unblocked by admin
+    const userToBeUnblocked = await User.findById(req.params.id);
+
+    // check if user found
+    if (!userToBeUnblocked) {
+      return res
+        .status(500)
+        .json({ status: "Error", message: "user not found" });
+    }
+
+    // change the isBlocked to false
+    userToBeUnblocked.isBlocked = false;
+
+    // save
+    await userToBeUnblocked.save();
+    res.json({
+      status: "Success",
+      data: "you have successfully unblocked this user(admin)",
     });
   } catch (error) {
     res.json(error.message);
