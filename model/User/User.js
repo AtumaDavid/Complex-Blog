@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Post = require("../Post/Post");
 
 // create schema
 const userSchema = new mongoose.Schema(
@@ -41,21 +42,21 @@ const userSchema = new mongoose.Schema(
     viewedBy: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Last Name is required"],
+        // required: [true, "Last Name is required"],
         ref: "User",
       },
     ],
     followers: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Last Name is required"],
+        // required: [true, "Last Name is required"],
         ref: "User",
       },
     ],
     following: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Last Name is required"],
+        // required: [true, "Last Name is required"],
         ref: "User",
       },
     ],
@@ -66,22 +67,22 @@ const userSchema = new mongoose.Schema(
     posts: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Last Name is required"],
+        // required: [true, "Last Name is required"],
         ref: "Post",
       },
     ],
     blocked: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Last Name is required"],
+        // required: [true, "Last Name is required"],
         ref: "User",
       },
     ],
-    plan: {
-      type: String,
-      enum: ["Free", "Preminum", "Pro"],
-      default: "Free",
-    },
+    // plan: {
+    //   type: String,
+    //   enum: ["Free", "Preminum", "Pro"],
+    //   default: "Free",
+    // },
 
     userAward: {
       type: String,
@@ -94,6 +95,40 @@ const userSchema = new mongoose.Schema(
     toJSON: { virtuals: true },
   }
 );
+
+// hooks
+// pre- before record is saved
+// /^find/--> findOne, find
+userSchema.pre(/^find/, async function (next) {
+  // get the user id
+  // console.log(this);
+  const userId = this._conditions._id;
+
+  // find post created by this user
+  const postFound = await Post.find({ user: userId });
+  // console.log(postFound); //get all posts from a profile
+
+  // get last post created by the user
+  const lastPost = postFound[postFound.length - 1];
+  // console.log(lastPost);
+
+  // get last post date
+  const lastPostDate = new Date(lastPost.createdAt);
+  // console.log(lastPostDate);
+
+  const lastPostDateToString = lastPostDate.toDateString();
+  // console.log(lastPostDateToString);
+
+  // add virtuals to the schema
+  userSchema.virtual("lastPostDate").get(function () {
+    return lastPostDateToString;
+  });
+  next();
+});
+// post- after saving
+// userSchema.post("save", function (next) {
+//   next();
+// });
 
 // get fullname
 userSchema.virtual("fullname").get(function () {
