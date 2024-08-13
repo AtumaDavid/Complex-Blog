@@ -99,6 +99,7 @@ const userSchema = new mongoose.Schema(
 // hooks
 // pre- before record is saved
 // /^find/--> findOne, find
+// check date for user last post
 userSchema.pre(/^find/, async function (next) {
   // get the user id
   // console.log(this);
@@ -123,6 +124,24 @@ userSchema.pre(/^find/, async function (next) {
   userSchema.virtual("lastPostDate").get(function () {
     return lastPostDateToString;
   });
+
+  // ----------------check if user is inactive for 30days-------------//
+  // get current date
+  const currentDate = new Date();
+  const diff = currentDate - lastPostDate;
+  const diffInDays = diff / (1000 * 2600 * 24);
+  // console.log(diffInDays);
+
+  if (diffInDays > 30) {
+    userSchema.virtual("isInactive").get(function () {
+      return true;
+    });
+  } else {
+    userSchema.virtual("isInactive").get(function () {
+      return false;
+    });
+  }
+
   next();
 });
 // post- after saving
