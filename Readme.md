@@ -19,3 +19,7 @@
 - The route handler can now access the authenticated user's information via req.user
 - The route handler processes the request and sends a response
 - For subsequent requests, the client continues to include the token in the header
+
+## To Work on
+
+- Block user afte being inactive for 30days

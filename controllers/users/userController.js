@@ -346,25 +346,35 @@ module.exports.blockUserController = async (req, res, next) => {
     const userWhoBlocked = await User.findById(req.user);
 
     // check if userToBeBlocked and userWhoBlocked are found
-    if (userToBeBlocked && userWhoBlocked) {
-      // check if userWhoBlocked is already in the user's blocked array
-      const isUserAlreadyBlocked = userWhoBlocked.blocked.find(
-        (blocked) => blocked.toString() === userToBeBlocked._id.toString()
-      );
-      if (isUserAlreadyBlocked) {
-        return next(appErr("you already blocked this user"));
-      }
-      // push userToBeBlocked to the userWhoBlocked's blocked array
-      userWhoBlocked.blocked.push(userToBeBlocked._id);
-      // save
-      await userWhoBlocked.save();
-      res.json({
-        status: "Success",
-        data: "you have successfully blocked this user",
+    if (!userToBeBlocked || !userWhoBlocked) {
+      return res.status(404).json({
+        status: "Error",
+        message: "User not found",
       });
     }
+
+    // check if userWhoBlocked is already in the user's blocked array
+    const isUserAlreadyBlocked = userWhoBlocked.blocked.find(
+      (blocked) => blocked.toString() === userToBeBlocked._id.toString()
+    );
+    if (isUserAlreadyBlocked) {
+      return res.status(400).json({
+        status: "Error",
+        message: "You have already blocked this user",
+      });
+    }
+
+    // push userToBeBlocked to the userWhoBlocked's blocked array
+    userWhoBlocked.blocked.push(userToBeBlocked._id);
+    // save
+    await userWhoBlocked.save();
+
+    res.status(200).json({
+      status: "Success",
+      data: "You have successfully blocked this user",
+    });
   } catch (error) {
-    res.json(error.message);
+    next(error);
   }
 };
 
@@ -394,9 +404,10 @@ module.exports.unBlockUserController = async (req, res, next) => {
       );
       // save
       await userWhoUnblocked.save();
-      res.json({
+
+      res.status(200).json({
         status: "Success",
-        data: "you have successfully unblocked this user",
+        data: "You have successfully unblocked this user",
       });
     }
   } catch (error) {
