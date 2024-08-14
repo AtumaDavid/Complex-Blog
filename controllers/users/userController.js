@@ -265,11 +265,62 @@ module.exports.getUserController = async (req, res) => {
 
 // update user
 module.exports.updateUserController = async (req, res) => {
+  const { email, lastname, firstname } = req.body;
   try {
+    // check if email is not taken
+    if (email) {
+      const emailTaken = await User.findOne({ email });
+      if (emailTaken) {
+        return res
+          .status(404)
+          .json({ status: "Error", message: "Email already taken" });
+      }
+    }
+    // update th user
+    const user = await User.findByIdAndUpdate(
+      req.user,
+      {
+        lastname,
+        firstname,
+        email,
+      },
+      {
+        new: true,
+        runValidation: true,
+      }
+    );
+    // send response
     res.json({
       status: "Success",
       data: "user updated",
     });
+  } catch (error) {
+    res.json(error.message);
+  }
+};
+
+// update user password
+module.exports.updateUserPasswordController = async (req, res, next) => {
+  const { password } = req.body;
+  try {
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      await User.findByIdAndUpdate(
+        req.user,
+        { password: hashedPassword },
+        { new: true, runValidators: true }
+      );
+      res.json({
+        status: "Success",
+        data: "password has been changes successfully",
+      });
+    } else {
+      return res
+        .status(404)
+        .json({ status: "Error", message: "Please provide password field" });
+    }
   } catch (error) {
     res.json(error.message);
   }

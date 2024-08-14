@@ -14,6 +14,7 @@ const {
   unBlockUserController,
   adminBlockUserController,
   adminUnblockUserController,
+  updateUserPasswordController,
 } = require("../../controllers/users/userController");
 const isLoginMiddleware = require("../../middleware/isLogin");
 const storage = require("../../config/cloudinary");
@@ -47,7 +48,14 @@ userRouter.get(
 );
 
 // update user
-userRouter.put("/:id", updateUserController);
+userRouter.put("/", isLoginMiddleware, updateUserController);
+
+// update password
+userRouter.put(
+  "/update-password",
+  isLoginMiddleware,
+  updateUserPasswordController
+);
 
 //following
 userRouter.get("/following/:id", isLoginMiddleware, followingController);

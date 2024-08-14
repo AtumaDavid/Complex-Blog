@@ -99,70 +99,6 @@ const userSchema = new mongoose.Schema(
 // // pre- before record is saved
 // // /^find/--> findOne, find
 // // check date for user last post
-// userSchema.pre(/^find/, async function (next) {
-//   // get the user id
-//   // console.log(this);
-//   const userId = this._conditions._id;
-
-//   // find post created by this user
-//   const postFound = await Post.find({ user: userId });
-//   // console.log(postFound); //get all posts from a profile
-
-//   // get last post created by the user
-//   const lastPost = postFound[postFound.length - 1];
-//   // console.log(lastPost);
-
-//   // get last post date
-//   const lastPostDate = new Date(lastPost.createdAt);
-//   // console.log(lastPostDate);
-
-//   const lastPostDateToString = lastPostDate.toDateString();
-//   // console.log(lastPostDateToString);
-
-//   // add virtuals to the schema
-//   userSchema.virtual("lastPostDate").get(function () {
-//     return lastPostDateToString;
-//   });
-
-//   // ----------------check if user is inactive for 30days-------------//
-//   // get current date
-//   const currentDate = new Date();
-//   const diff = currentDate - lastPostDate;
-//   const diffInDays = diff / (1000 * 2600 * 24);
-//   // console.log(diffInDays);
-
-//   if (diffInDays > 30) {
-//     userSchema.virtual("isInactive").get(function () {
-//       return true;
-//     });
-
-//     // find the user by ID and update
-//     // await User.findByIdAndUpdate(userId, { isBlocked: true }, { new: true });
-//   } else {
-//     userSchema.virtual("isInactive").get(function () {
-//       return false;
-//     });
-//     // find the user by ID and update
-//     // await User.findByIdAndUpdate(userId, { isBlocked: false }, { new: true });
-//   }
-
-//   // last active date
-//   const daysAgo = Math.floor(diffInDays);
-//   // console.log(daysAgo);
-//   userSchema.virtual("last active").get(function () {
-//     if (daysAgo <= 0) {
-//       return "Today";
-//     }
-//     if (daysAgo === 1) {
-//       return "Yesterday";
-//     }
-//     if (daysAgo > 1) {
-//       return `${daysAgo} days ago`;
-//     }
-//   });
-
-//   // next();
-// });
 
 userSchema.pre("findOne", async function (next) {
   const userId = this._conditions._id;
@@ -183,7 +119,7 @@ userSchema.pre("findOne", async function (next) {
     return next();
   }
 
-  const lastPostDate = new Date(lastPost.createdAt);
+  const lastPostDate = new Date(lastPost?.createdAt);
   const lastPostDateToString = lastPostDate.toDateString();
 
   userSchema.virtual("lastPostDate").get(function () {
@@ -198,12 +134,15 @@ userSchema.pre("findOne", async function (next) {
     userSchema.virtual("isInactive").get(function () {
       return true;
     });
+    await User.findByIdAndUpdate(userId, { isBlocked: true }, { new: true });
   } else {
     userSchema.virtual("isInactive").get(function () {
       return false;
     });
+    await User.findByIdAndUpdate(userId, { isBlocked: false }, { new: true });
   }
 
+  // last active
   const daysAgo = Math.floor(diffInDays);
   userSchema.virtual("last active").get(function () {
     if (daysAgo <= 0) {
@@ -217,33 +156,53 @@ userSchema.pre("findOne", async function (next) {
     }
   });
 
+  // // -----------------------------------------------
+  // // update userAward based on the number of posts
+  // // -----------------------------------------------
+
+  const numberOfPosts = postFound.length;
+  if (numberOfPosts < 10) {
+    await User.findByIdAndUpdate(
+      userId,
+      { userAward: "Bronze" },
+      { new: true }
+    );
+  }
+  if (numberOfPosts > 10) {
+    await User.findByIdAndUpdate(
+      userId,
+      { userAward: "Silver" },
+      { new: true }
+    );
+  }
+  if (numberOfPosts > 20) {
+    await User.findByIdAndUpdate(userId, { userAward: "Gold" }, { new: true });
+  }
+
   next();
 });
 
 // // -----------------------------------------------
 // // update userAward based on the number of posts
 // // -----------------------------------------------
-userSchema.post("init", function () {
-  // const userAward = this.userAward;
-  // console.log(userAward);
-  // get post count
-  const postCount = this.postCount;
-  // console.log(postCount);
+// another method
+// userSchema.post("init", function () {
+//   // const userAward = this.userAward;
+//   // console.log(userAward);
+//   // get post count
+//   const postCount = this.postCount;
+//   // console.log(postCount);
 
-  if (postCount <= 10) {
-    // if numberOfPosts less than 10, let number of post remain bronze
-    this.userAward = "Bronze";
-  }
-  if (postCount > 10) {
-    this.userAward = "Silver";
-  } else if (postCount > 20) {
-    this.userAward = "Gold";
-  }
-});
-
-// // -----------------------------------------------
-// // block user inactive for 30days or more
-// // -----------------------------------------------
+//   if (postCount <= 10) {
+//     // if numberOfPosts less than 10, let number of post remain bronze
+//     this.userAward = "Bronze";
+//   }
+//   if (postCount > 10) {
+//     this.userAward = "Silver";
+//   } else if (postCount > 20) {
+//     this.userAward = "Gold";
+//   }
+// });
 
 //---------------------//
 // get fullname
