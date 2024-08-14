@@ -251,7 +251,9 @@ module.exports.getUserController = async (req, res) => {
 
     // const user = await User.findById(id);
     // req.user from "req.user = decodedUser.id" in isLogin middleware
-    const user = await User.findById(req.user);
+    const user = await User.findById(req.user).populate({
+      path: "posts",
+    });
     res.json({
       status: "Success",
       data: user,

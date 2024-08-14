@@ -164,7 +164,7 @@ const userSchema = new mongoose.Schema(
 //   // next();
 // });
 
-userSchema.pre(/^find/, async function (next) {
+userSchema.pre("findOne", async function (next) {
   const userId = this._conditions._id;
 
   // Find posts created by this user
@@ -230,12 +230,14 @@ userSchema.post("init", function () {
   const postCount = this.postCount;
   // console.log(postCount);
 
-  if (postCount < 1) {
+  if (postCount <= 10) {
     // if numberOfPosts less than 10, let number of post remain bronze
     this.userAward = "Bronze";
   }
-  if (postCount > 1) {
+  if (postCount > 10) {
     this.userAward = "Silver";
+  } else if (postCount > 20) {
+    this.userAward = "Gold";
   }
 });
 
