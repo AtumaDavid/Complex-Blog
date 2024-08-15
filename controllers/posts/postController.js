@@ -26,7 +26,7 @@ module.exports.createPostController = async (req, res) => {
       data: postCreated,
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -38,7 +38,7 @@ module.exports.getAllPostsController = async (req, res) => {
       data: "gt all posts",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -50,7 +50,7 @@ module.exports.getPostController = async (req, res) => {
       data: "get a post",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -62,7 +62,7 @@ module.exports.updatePostController = async (req, res) => {
       data: "update post",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -74,6 +74,6 @@ module.exports.deletePostController = async (req, res) => {
       data: "delet route",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };

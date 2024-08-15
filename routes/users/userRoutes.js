@@ -94,6 +94,8 @@ userRouter.post(
 );
 
 // delete user
-userRouter.delete("/:id", deleteUserController);
+userRouter.delete("/delete-account", isLoginMiddleware, deleteUserController);
 
 module.exports = userRouter;
+
+// res.status(500).json({ status: "Error", message: "User already exists" });

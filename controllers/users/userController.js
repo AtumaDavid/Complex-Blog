@@ -3,6 +3,9 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../../utils/generateToken");
 const getTokenFromHeader = require("../../utils/getTokenFromHeader");
 const appErr = require("../../utils/appErr");
+const Post = require("../../model/Post/Post");
+const Comment = require("../../model/Comment/Comment");
+const Category = require("../../model/Category/Category");
 
 // register
 module.exports.userRegisterController = async (req, res, next) => {
@@ -11,10 +14,9 @@ module.exports.userRegisterController = async (req, res, next) => {
     //check if email exists
     const userFound = await User.findOne({ email });
     if (userFound) {
-      // return res.json({
-      //   msg: "User already exists",
-      // });
-      return next(appErr("User Already Exists", 500));
+      return res
+        .status(500)
+        .json({ status: "Error", message: "User already exists" });
     }
 
     // hash password
@@ -35,8 +37,8 @@ module.exports.userRegisterController = async (req, res, next) => {
       data: user,
     });
   } catch (error) {
-    // res.json(error.message);
-    next(new Error(error.message));
+    res.json(error.message);
+    // next(new Error(error.message));
   }
 };
 
@@ -47,18 +49,18 @@ module.exports.userLoginController = async (req, res) => {
     // check if email exists
     const userFound = await User.findOne({ email });
     if (!userFound) {
-      return res.json({
-        msg: "Invalid login credentials",
-      });
+      return res
+        .status(500)
+        .json({ status: "Error", message: "Invalid login credentials" });
     }
 
     // verify password
     const isPasswordHashed = await bcrypt.compare(password, userFound.password);
 
     if (!isPasswordHashed) {
-      return res.json({
-        msg: "Invalid login credentials",
-      });
+      return res
+        .status(500)
+        .json({ status: "Error", message: "Invalid login credentials" });
     }
 
     res.json({
@@ -222,7 +224,10 @@ module.exports.whoViewedMyProfileController = async (req, res, next) => {
         (viewer) => viewer.toString() === userWhoViewed._id.toJSON()
       );
       if (isUserAlreadyViewed) {
-        return next(appErr("you already vewed this profile"));
+        return res.status(500).json({
+          status: "Error",
+          message: "You already viewed this profile",
+        });
       } else {
         // push the userWhoViewed to thhe user's array
         user.viewedBy.push(userWhoViewed._id);
@@ -230,7 +235,7 @@ module.exports.whoViewedMyProfileController = async (req, res, next) => {
         // save the user
         await user.save();
 
-        res.json({
+        res.status(200).json({
           status: "Success",
           data: "you have viewed this profile",
         });
@@ -259,7 +264,7 @@ module.exports.getUserController = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -295,7 +300,7 @@ module.exports.updateUserController = async (req, res) => {
       data: "user updated",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -322,38 +327,59 @@ module.exports.updateUserPasswordController = async (req, res, next) => {
         .json({ status: "Error", message: "Please provide password field" });
     }
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
-// delete user
+// delete user account
 module.exports.deleteUserController = async (req, res) => {
   try {
+    const userToDelete = await User.findById(req.user);
+
+    // find all posts to be deleted
+    await Post.deleteMany({ user: req.user });
+
+    // find all comments and delete
+    await Comment.deleteMany({ user: req.user });
+
+    // find all categories and delete
+    await Category.deleteMany({ user: req.user });
+
+    // delete the user
+    await userToDelete.deleteOne();
+
     res.json({
       status: "Success",
-      data: "user deleted",
+      data: "your account has been deleted",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
 // profile photo upload
 module.exports.profilePhotoUploadController = async (req, res, next) => {
   console.log("req.user:", req.user);
-  console.log("req.userAuth:", req.userAuth);
+  // console.log("req.userAuth:", req.userAuth);
   try {
     // Find the user to be updated
     const userToUpdate = await User.findById(req.user);
 
     // Check if user is found
     if (!userToUpdate) {
-      return next(appErr("User not found", 404)); // Use 404 for not found
+      // return next(appErr("User not found", 404)); // Use 404 for not found
+      return res
+        .status(404)
+        .json({ status: "Error", message: "User not found" });
     }
 
     // Check if user is blocked (by admin)
     if (userToUpdate.isBlocked) {
-      return next(appErr("Action not allowed, your account is blocked", 403));
+      // return next(appErr("Action not allowed, your account is blocked", 403));
+      return res.status(403).json({
+        status: "Error",
+        message: "Action not allowed, your account is blocked",
+      });
     }
 
     // Check if a file is uploaded
@@ -380,11 +406,19 @@ module.exports.profilePhotoUploadController = async (req, res, next) => {
       });
     } else {
       // Handle case where no file is uploaded
-      return next(appErr("No file uploaded", 400));
+      // return next(appErr("No file uploaded", 400));
+      return res.status(400).json({
+        status: "Error",
+        message: "No file uploaded",
+      });
     }
   } catch (error) {
     // Pass error to the global error handler
-    return next(appErr(error.message, 500));
+    // return next(appErr(error.message, 500));
+    return res.status(500).json({
+      status: "Error",
+      message: error.message,
+    });
     // res.json(error.message);
   }
 };
@@ -427,7 +461,11 @@ module.exports.blockUserController = async (req, res, next) => {
       data: "You have successfully blocked this user",
     });
   } catch (error) {
-    next(error);
+    // next(error);
+    res.status(500).json({
+      status: "Error",
+      message: "Internal Server Error",
+    });
   }
 };
 
@@ -464,7 +502,8 @@ module.exports.unBlockUserController = async (req, res, next) => {
       });
     }
   } catch (error) {
-    res.json(error.message);
+    // res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 
@@ -518,7 +557,7 @@ module.exports.adminUnblockUserController = async (req, res) => {
       data: "you have successfully unblocked this user(admin)",
     });
   } catch (error) {
-    res.json(error.message);
+    res.status(500).json(error.message);
   }
 };
 

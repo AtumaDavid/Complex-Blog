@@ -4,21 +4,26 @@ const {
   getCategoryController,
   updateCategoryController,
   deleteCategoryController,
+  getAllCategoriesController,
 } = require("../../controllers/categories/categoryController");
+const isLoginMiddleware = require("../../middleware/isLogin");
 
 const categoryRouter = express.Router();
 
 // create category
-categoryRouter.post("/", createCategoryController);
+categoryRouter.post("/", isLoginMiddleware, createCategoryController);
+
+// get all categories
+categoryRouter.get("/", isLoginMiddleware, getAllCategoriesController);
 
 // get a category
-categoryRouter.get("/:id", getCategoryController);
+categoryRouter.get("/:id", isLoginMiddleware, getCategoryController);
 
 // update category
-categoryRouter.put("/:id", updateCategoryController);
+categoryRouter.put("/:id", isLoginMiddleware, updateCategoryController);
 
 // delete post
-categoryRouter.delete("/:id", deleteCategoryController);
+categoryRouter.delete("/:id", isLoginMiddleware, deleteCategoryController);
 
 module.exports = categoryRouter;
 
