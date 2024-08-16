@@ -70,15 +70,34 @@ module.exports.getAllPostsController = async (req, res) => {
   }
 };
 
-// get a post
+// get a post detail
 module.exports.getPostController = async (req, res) => {
   try {
-    res.json({
-      status: "Success",
-      data: "get a post",
-    });
+    // find the post
+    const post = await Post.findById(req.params.id);
+
+    // check if user has viewed the post
+    const isViewed = post.numViews.includes(req.user);
+
+    if (isViewed) {
+      // User has already viewed the post
+      res.json({
+        status: "Success",
+        data: post,
+      });
+    } else {
+      // User has not viewed the post, so add them to numViews
+      post.numViews.push(req.user);
+      await post.save();
+
+      res.json({
+        status: "Success",
+        data: post,
+        message: "User view recorded.",
+      });
+    }
   } catch (error) {
-    res.status(500).json(error.message);
+    res.status(500).json({ status: "Error", message: error.message });
   }
 };
 
@@ -88,6 +107,64 @@ module.exports.updatePostController = async (req, res) => {
     res.json({
       status: "Success",
       data: "update post",
+    });
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
+// toggle likes
+module.exports.toggleLikesController = async (req, res) => {
+  try {
+    // get the post
+    const post = await Post.findById(req.params.id);
+
+    // check if the user has already liked the post
+    const hasLiked = post.likes.includes(req.user);
+
+    // togle like on and off
+    // if user has already liked the post, unlike the post
+    if (hasLiked) {
+      post.likes = post.likes.filter((like) => like != req.user);
+      await post.save();
+    } else {
+      // if user has not liked the post, like the post
+      post.likes.push(req.user);
+      await post.save();
+    }
+
+    res.json({
+      status: "Success",
+      data: post,
+    });
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+};
+
+// toggle dislike
+module.exports.toggleDislikeController = async (req, res) => {
+  try {
+    // get the post
+    const post = await Post.findById(req.params.id);
+
+    // check if the user has already liked the post
+    const hasDisLiked = post.disLikes.includes(req.user);
+
+    // toggle like on and off
+    // if user has already disliked the post, Like the post
+    if (hasDisLiked) {
+      post.disLikes = post.disLikes.filter((dislike) => dislike != req.user);
+      await post.save();
+    } else {
+      // if user has not liked the post, like the post
+      post.disLikes.push(req.user);
+      await post.save();
+    }
+
+    res.json({
+      status: "Success",
+      data: post,
     });
   } catch (error) {
     res.status(500).json(error.message);

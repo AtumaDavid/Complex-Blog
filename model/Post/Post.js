@@ -48,8 +48,30 @@ const postSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
   }
 );
+
+// Hook
+postSchema.pre(/^find/, function (next) {
+  // add views count as virtual property
+  postSchema.virtual("viewsCount").get(function () {
+    // const post = this
+    return this.numViews.length;
+  });
+
+  // add likes  count property
+  postSchema.virtual("likesCount").get(function () {
+    return this.likes.length;
+  });
+
+  // add dislikes  count property
+  postSchema.virtual("dislikesCount").get(function () {
+    return this.disLikes.length;
+  });
+
+  next();
+});
 
 // compile the post model
 const Post = mongoose.model("Post", postSchema);

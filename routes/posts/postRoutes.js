@@ -5,6 +5,8 @@ const {
   getPostController,
   updatePostController,
   deletePostController,
+  toggleLikesController,
+  toggleDislikeController,
 } = require("../../controllers/posts/postController");
 const isLoginMiddleware = require("../../middleware/isLogin");
 
@@ -14,10 +16,16 @@ const postRouter = express.Router();
 postRouter.post("/", isLoginMiddleware, createPostController);
 
 // get all posts
-postRouter.get("/", isLoginMiddleware, getAllPostsController);
+postRouter.get("/", isLoginMiddleware, getAllPostsController); //id of post
+
+// toggle likes
+postRouter.get("/likes/:id", isLoginMiddleware, toggleLikesController); //id of post
+
+// toggle dislikes
+postRouter.get("/dislikes/:id", isLoginMiddleware, toggleDislikeController); //id of post
 
 // get a post
-postRouter.get("/:id", getPostController);
+postRouter.get("/:id", isLoginMiddleware, getPostController);
 
 // update post
 postRouter.put("/:id", updatePostController);
