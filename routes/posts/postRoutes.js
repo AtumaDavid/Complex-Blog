@@ -14,7 +14,7 @@ const postRouter = express.Router();
 postRouter.post("/", isLoginMiddleware, createPostController);
 
 // get all posts
-postRouter.get("/", getAllPostsController);
+postRouter.get("/", isLoginMiddleware, getAllPostsController);
 
 // get a post
 postRouter.get("/:id", getPostController);
