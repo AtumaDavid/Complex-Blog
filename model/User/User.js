@@ -71,6 +71,13 @@ const userSchema = new mongoose.Schema(
         ref: "Post",
       },
     ],
+    comments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        // required: [true, "Last Name is required"],
+        ref: "Comment",
+      },
+    ],
     blocked: [
       {
         type: mongoose.Schema.Types.ObjectId,
