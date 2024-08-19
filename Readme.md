@@ -22,4 +22,4 @@
 
 ## To Work on
 
-- Block user afte being inactive for 30days
+- uploading of images should be optional: for profile, to post and to update post

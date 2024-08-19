@@ -43,7 +43,7 @@ const postSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      // required: [true, "Post image is required"],
+      required: [true, "Post image is required"],
     },
   },
   {
@@ -82,6 +82,17 @@ postSchema.pre(/^find/, function (next) {
     const total = this.likes.length + this.disLikes.length;
     const percentage = (this.disLikes.length / total) * 100;
     return `${percentage} %`;
+  });
+
+  // if days is less than 0, return today, if days is 1, return yesterday, else return days ago
+  postSchema.virtual("daysAgo").get(function () {
+    const today = new Date();
+    const postDate = new Date(this.createdAt);
+    const timeDiff = today.getTime() - postDate.getTime();
+    const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+    if (daysAgo <= 0) return "Today";
+    else if (daysAgo == 1) return "Yesterday";
+    else return daysAgo + " days ago";
   });
 
   next();

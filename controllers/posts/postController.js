@@ -3,6 +3,7 @@ const User = require("../../model/User/User");
 
 // create post
 module.exports.createPostController = async (req, res) => {
+  // console.log(req.file); //file/image upload
   const { title, description, category } = req.body;
   // console.log(req.body);
   try {
@@ -20,6 +21,8 @@ module.exports.createPostController = async (req, res) => {
       description,
       user: author._id,
       category,
+      // photo: req.file.path,
+      photo: req?.file?.path, //check if theres a req.file.path for file upload
     });
 
     // associate user to a post -push the post into the user post field
@@ -103,10 +106,33 @@ module.exports.getPostController = async (req, res) => {
 
 // update post
 module.exports.updatePostController = async (req, res) => {
+  const { title, description, category } = req.body;
   try {
+    // find the post
+    const post = await Post.findById(req.params.id);
+    // check if the user is the owner of the post
+    if (post.user.toString() !== req.user.toString()) {
+      return res.status(403).json({
+        status: "Failed",
+        message: "You are not allowed to update this page",
+      });
+    }
+    // update the post
+    await Post.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        description,
+        category,
+        photo: req?.file?.path,
+      },
+      {
+        new: true,
+      }
+    );
     res.json({
       status: "Success",
-      data: "update post",
+      data: "post updated successfully",
     });
   } catch (error) {
     res.status(500).json(error.message);
@@ -174,9 +200,20 @@ module.exports.toggleDislikeController = async (req, res) => {
 // delete post
 module.exports.deletePostController = async (req, res) => {
   try {
+    // find the post
+    const post = await Post.findById(req.params.id);
+    // check if the user is the owner of the post
+    if (post.user.toString() !== req.user.toString()) {
+      return res.status(403).json({
+        status: "Failed",
+        message: "You are not allowed to delete this page",
+      });
+    }
+    // delete the post
+    await Post.findByIdAndDelete(req.params.id);
     res.json({
       status: "Success",
-      data: "delet route",
+      data: "post deleted successfully",
     });
   } catch (error) {
     res.status(500).json(error.message);
