@@ -33,7 +33,7 @@ userRouter.post("/register", userRegisterController);
 userRouter.post("/login", userLoginController);
 
 // get users
-userRouter.get("/", getAllUserController);
+userRouter.get("/", isAdminMiddleware, getAllUserController);
 
 // get a particular user profile
 // userRouter.get("/profile/:id", isLoginMiddleware, getUserController);
