@@ -87,13 +87,13 @@ some endpoints may require authentication. for example, to create a create/delet
 ## Register a new API Client
 
 ```http
-POST/api/v1/users/register
+POST /api/v1/users/register
 ```
 
 ## Login
 
 ```http
-POST/api/v1/users/login
+POST /api/v1/users/login
 ```
 
 The request body needs to be in JSON format
@@ -127,10 +127,10 @@ Retrieve a list of all registered users. This endpoint requires authentication a
             "userAward": "Bronze",          // User's award level
             "createdAt": "",                // Timestamp of user creation
             "updatedAt": "",                // Timestamp of last update
-            "__v": number,                  // Mongoose version key
+            "__v": 0,                       // Mongoose version key
             "fullname": "",                 // User's full name
             "initials": "",                 // User's initials
-            "postCount": number,            // Number of posts created by the user
+            "postCount": 0,                 // Number of posts created by the user
             "followersCount": 0,            // Number of followers the user has
             "followingCount": 0,            // No of users the user is following
             "viewersCount": 0,              // No of users who viewed the user's profile
