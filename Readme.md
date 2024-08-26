@@ -54,7 +54,7 @@ server: Node, Express, MongoDB, Mongoose, JWT
 - A user can close his/her account
 
 ## API Documentation
-[Documentation]([https://linktodocumentation](https://documenter.getpostman.com/view/29208473/2sAXjF7E6s))
+(https://documenter.getpostman.com/view/29208473/2sAXjF7E6s)
 
 ## To Work on
 
